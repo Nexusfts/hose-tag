@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOSE TAG — Test &amp; Certification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#1C1F1E;
+    --ink-soft:#2A2E2C;
+    --paper:#EDEAE2;
+    --paper-dim:#DFDAD0;
+    --red:#C33B2E;
+    --red-dark:#8E2A20;
+    --yellow:#DE9F1F;
+    --green:#3C7A5C;
+    --green-dark:#295640;
+    --steel:#6B7280;
+    --rivet:#B8BCC2;
+    --rule: rgba(28,31,30,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px 64px;}
+  header.app-head{
+    background:var(--ink);
+    color:var(--paper);
+    padding:22px 20px 18px;
+    margin-bottom:26px;
+  }
+  header.app-head .inner{max-width:920px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .brand{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    letter-spacing:0.06em;
+    font-size:26px;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand .tick{
+    width:10px;height:10px;background:var(--red);display:inline-block;
+    transform:rotate(45deg);
+  }
+  .brand-sub{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--rivet);letter-spacing:0.04em;}
+
+  nav.tabs{
+    display:flex;
+    gap:2px;
+    background:var(--paper-dim);
+    border:1px solid var(--rule);
+    margin-bottom:24px;
+    overflow-x:auto;
+  }
+  nav.tabs button{
+    font-family:'Oswald',sans-serif;
+    font-size:13px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:600;
+    background:transparent;
+    border:none;
+    padding:13px 18px;
+    cursor:pointer;
+    color:var(--steel);
+    border-bottom:3px solid transparent;
+    white-space:nowrap;
+  }
+  nav.tabs button.active{
+    color:var(--ink);
+    border-bottom:3px solid var(--red);
+    background:var(--paper);
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--rule);
+    padding:22px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:16px;
+    margin:0 0 16px;
+    padding-bottom:10px;
+    border-bottom:1px solid var(--rule);
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
+
+  label{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.03em;
+    color:var(--steel);
+    text-transform:uppercase;
+    margin-bottom:5px;
+    margin-top:12px;
+  }
+  label:first-child{margin-top:0;}
+  input, select, textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    padding:10px 11px;
+    border:1px solid var(--steel);
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{outline:2px solid var(--ink);outline-offset:1px;}
+  textarea{resize:vertical;min-height:64px;}
+
+  .btn{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    font-weight:600;
+    font-size:13px;
+    padding:12px 20px;
+    border:none;
+    cursor:pointer;
+    background:var(--ink);
+    color:var(--paper);
+    margin-top:16px;
+  }
+  .btn:hover{background:var(--ink-soft);}
+  .btn.red{background:var(--red);}
+  .btn.red:hover{background:var(--red-dark);}
+  .btn.ghost{background:transparent;border:1px solid var(--ink);color:var(--ink);}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn.small{padding:7px 12px;font-size:11px;margin-top:0;}
+
+  .help{font-size:12px;color:var(--steel);margin-top:6px;line-height:1.5;}
+
+  /* TAG — signature element */
+  .tag{
+    background:var(--ink);
+    color:var(--paper);
+    position:relative;
+    padding:26px 24px 22px;
+    max-width:380px;
+    margin:0 auto;
+    border:1px solid #000;
+  }
+  .tag::before, .tag::after,
+  .tag .rivet-r1, .tag .rivet-r2{
+    content:"";
+    position:absolute;
+    width:9px;height:9px;
+    border-radius:50%;
+    background:var(--rivet);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.4);
+  }
+  .tag::before{top:10px;left:10px;}
+  .tag::after{top:10px;right:10px;}
+  .tag .rivet-r1{bottom:10px;left:10px;}
+  .tag .rivet-r2{bottom:10px;right:10px;}
+  .tag-eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.12em;
+    color:var(--yellow);
+    text-transform:uppercase;
+    text-align:center;
+    margin-bottom:4px;
+  }
+  .tag-id{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.04em;
+    text-align:center;
+    margin-bottom:2px;
+  }
+  .tag-desc{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    text-align:center;
+    color:var(--rivet);
+    margin-bottom:16px;
+  }
+  .tag-qr{
+    background:var(--paper);
+    padding:12px;
+    display:flex;
+    justify-content:center;
+    margin-bottom:14px;
+  }
+  .tag-footer{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9.5px;
+    text-align:center;
+    color:var(--rivet);
+    letter-spacing:0.03em;
+    border-top:1px dashed rgba(237,234,226,0.3);
+    padding-top:10px;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--steel);
+    text-align:left;
+    padding:8px 8px;
+    border-bottom:2px solid var(--ink);
+  }
+  td{padding:9px 8px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  tr.row-detail td{background:var(--paper-dim);font-size:12.5px;}
+  .badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    padding:3px 8px;
+    letter-spacing:0.03em;
+    display:inline-block;
+  }
+  .badge.pass{background:var(--green);color:#fff;}
+  .badge.fail{background:var(--red);color:#fff;}
+  .badge.cert{background:var(--yellow);color:var(--ink);}
+
+  .empty{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--steel);
+    padding:24px 0;
+    text-align:center;
+  }
+  .row-flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .hose-pick-item{
+    padding:9px 10px;border:1px solid var(--rule);cursor:pointer;
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+  }
+  .hose-pick-item:hover{border-color:var(--ink);}
+  .hose-pick-item.selected{border-color:var(--red);background:#fff;}
+  .hose-pick-item .hid{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;}
+  .hose-pick-item .hdesc{font-size:12px;color:var(--steel);}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper);
+    padding:11px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;
+    z-index:999; box-shadow:0 4px 14px rgba(0,0,0,0.3);
+  }
+  .search-box{position:relative;}
+  .banner{
+    background:#fff; border:1px solid var(--yellow); padding:12px 14px; font-size:12.5px;
+    margin-bottom:16px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .banner strong{font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:11.5px;letter-spacing:0.04em;}
+  .checkline{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--rule);}
+  .checkline input[type=checkbox]{width:auto;margin-top:3px;}
+  @media print{
+    header.app-head, nav.tabs, .no-print{display:none !important;}
+    body{background:#fff;}
+    .card{border:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-head">
+  <div class="inner">
+    <div class="brand"><span class="tick"></span>HOSE TAG</div>
+    <div class="brand-sub">ASSET TEST &amp; CERTIFICATION LOG · PROTOTYPE</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="banner no-print" id="scopeBanner">
+    <div>⚠</div>
+    <div><strong>Shared prototype data</strong> — hose registrations and test records here are stored as shared artifact data, visible to anyone using this tool. Not hosted yet: see the Register tab for how the QR code will work once you publish this page at a real URL.</div>
+  </div>
+
+  <nav class="tabs no-print">
+    <button data-tab="register" class="active">Register &amp; QR</button>
+    <button data-tab="test">Run Test</button>
+    <button data-tab="records">Records</button>
+    <button data-tab="certs">Certificates</button>
+  </nav>
+
+  <!-- REGISTER -->
+  <div class="panel active" id="panel-register">
+    <div class="card">
+      <h2>Deploy URL</h2>
+      <label>Base URL this page will be hosted at</label>
+      <input id="baseUrl" placeholder="https://yourdomain.com/hose-test">
+      <p class="help">This is the address you'll eventually host this file at. The QR code encodes <strong>BASE_URL?id=HOSE_ID</strong>. Once hosted there, scanning the tag opens this same page and jumps straight to the Run Test tab, pre-filled with that hose's ID — no extra setup needed. Until then, use "Open Test Form" below to preview that flow.</p>
+    </div>
+
+    <div class="card">
+      <h2>Register a Hose</h2>
+      <div class="grid2">
+        <div>
+          <label>Asset ID / Tag Number</label>
+          <input id="regId" placeholder="e.g. HOSE-0042">
+        </div>
+        <div>
+          <label>Type / Diameter</label>
+          <input id="regType" placeholder='e.g. 1.5" attack line'>
+        </div>
+      </div>
+      <label>Description / Location</label>
+      <input id="regDesc" placeholder="e.g. Engine 3, driver-side compartment">
+      <label>Length (ft/m)</label>
+      <input id="regLength" placeholder="e.g. 50 ft">
+      <button class="btn red" id="registerBtn">Register &amp; Generate Tag</button>
+      <p class="help" id="regError" style="color:var(--red);display:none;"></p>
+    </div>
+
+    <div class="card" id="tagCardWrap" style="display:none;">
+      <h2>Asset Tag <span class="no-print" style="float:right;"><button class="btn ghost small" onclick="window.print()">Print</button></span></h2>
+      <div class="tag" id="tagRender">
+        <div class="rivet-r1"></div><div class="rivet-r2"></div>
+        <div class="tag-eyebrow">HOSE ASSET · TEST TAG</div>
+        <div class="tag-id" id="tagId">—</div>
+        <div class="tag-desc" id="tagDesc">—</div>
+        <div class="tag-qr" id="tagQr"></div>
+        <div class="tag-footer" id="tagUrl">—</div>
+      </div>
+      <div class="row-flex no-print" style="justify-content:center;margin-top:16px;">
+        <button class="btn ghost small" id="openTestFromTag">Open Test Form →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Registered Hoses</h2>
+      <div id="hoseListRegister"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- TEST -->
+  <div class="panel" id="panel-test">
+    <div class="card">
+      <h2>Select Hose</h2>
+      <input id="hoseSearch" placeholder="Search asset ID or description…">
+      <div id="hosePicker" style="margin-top:12px;"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="card" id="testFormCard" style="display:none;">
+      <h2>Test Record — <span id="testingHoseId" style="font-family:'JetBrains Mono',monospace;"></span></h2>
+      <div class="grid2">
+        <div>
+          <label>Test Date</label>
+          <input type="date" id="tDate">
+        </div>
+        <div>
+          <label>Tester Name / ID</label>
+          <input id="tTester" placeholder="e.g. J. Alvarez">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Test Pressure</label>
+          <input id="tPressure" placeholder="e.g. 300 psi">
+        </div>
+        <div>
+          <label>Duration Held</label>
+          <input id="tDuration" placeholder="e.g. 5 min">
+        </div>
+      </div>
+      <label>Result</label>
+      <div class="row-flex">
+        <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);margin:0;">
+          <input type="radio" name="tResult" value="Pass" style="width:auto;"> Pass
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);margin:0;">
+          <input type="radio" name="tResult" value="Fail" style="width:auto;"> Fail
+        </label>
+      </div>
+      <label>Visual Inspection Notes</label>
+      <textarea id="tNotes" placeholder="Abrasion, coupling condition, leaks, kinks, etc."></textarea>
+      <label>Next Test Due</label>
+      <input type="date" id="tNextDue">
+      <button class="btn red" id="saveTestBtn">Save Test Record</button>
+      <p class="help" id="testError" style="color:var(--red);display:none;"></p>
+    </div>
+  </div>
+
+  <!-- RECORDS -->
+  <div class="panel" id="panel-records">
+    <div class="card">
+      <h2>Test Records</h2>
+      <div class="row-flex" style="margin-bottom:14px;">
+        <input id="recFilter" placeholder="Filter by asset ID…" style="max-width:260px;">
+        <select id="recResultFilter" style="max-width:150px;">
+          <option value="">All results</option>
+          <option value="Pass">Pass</option>
+          <option value="Fail">Fail</option>
+        </select>
+      </div>
+      <div id="recordsTableWrap"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- CERTS -->
+  <div class="panel" id="panel-certs">
+    <div class="card">
+      <h2>Generate Certificates</h2>
+      <p class="help">Select passed tests below, then generate a PDF certificate for each. Already-certified tests are marked and can be regenerated if needed.</p>
+      <div id="certList"><div class="empty">Loading…</div></div>
+      <button class="btn red" id="genCertBtn" disabled>Generate Certificate(s) — PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SHARED = true;
+let hoses = [];
+let tests = [];
+let selectedHoseId = null;
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function plusMonths(dateStr, months){
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth()+months);
+  return d.toISOString().slice(0,10);
+}
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function toast(msg){
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+async function loadData(){
+  try{
+    const h = await window.storage.get('hose-registry', SHARED);
+    hoses = h ? JSON.parse(h.value) : [];
+  }catch(e){ hoses = []; }
+  try{
+    const t = await window.storage.get('test-records', SHARED);
+    tests = t ? JSON.parse(t.value) : [];
+  }catch(e){ tests = []; }
+  try{
+    const b = await window.storage.get('deploy-base-url', false);
+    if(b) document.getElementById('baseUrl').value = b.value;
+  }catch(e){}
+  renderHoseListRegister();
+  renderHosePicker();
+  renderRecords();
+  renderCertList();
+}
+
+async function saveHoses(){
+  await window.storage.set('hose-registry', JSON.stringify(hoses), SHARED);
+}
+async function saveTests(){
+  await window.storage.set('test-records', JSON.stringify(tests), SHARED);
+}
+
+// ---- Tabs ----
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>switchTab(btn.dataset.tab));
+});
+function switchTab(name){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ---- Register ----
+document.getElementById('baseUrl').addEventListener('change', async (e)=>{
+  try{ await window.storage.set('deploy-base-url', e.target.value, false); }catch(err){}
+});
+
+document.getElementById('registerBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('regId').value.trim();
+  const type = document.getElementById('regType').value.trim();
+  const desc = document.getElementById('regDesc').value.trim();
+  const length = document.getElementById('regLength').value.trim();
+  const errEl = document.getElementById('regError');
+  errEl.style.display='none';
+  if(!id){ errEl.textContent='Asset ID is required.'; errEl.style.display='block'; return; }
+  if(hoses.some(h=>h.id===id)){ errEl.textContent='That Asset ID is already registered.'; errEl.style.display='block'; return; }
+  const hose = {id, type, desc, length, registeredAt: todayStr()};
+  hoses.push(hose);
+  try{
+    await saveHoses();
+    toast('Hose '+id+' registered.');
+    document.getElementById('regId').value='';
+    document.getElementById('regType').value='';
+    document.getElementById('regDesc').value='';
+    document.getElementById('regLength').value='';
+    renderTag(hose);
+    renderHoseListRegister();
+    renderHosePicker();
+    renderCertList();
+  }catch(e){
+    errEl.textContent='Could not save — please try again.'; errEl.style.display='block';
+  }
+});
+
+function renderTag(hose){
+  document.getElementById('tagCardWrap').style.display='block';
+  document.getElementById('tagId').textContent = hose.id;
+  document.getElementById('tagDesc').textContent = [hose.type, hose.desc].filter(Boolean).join(' · ') || 'No description';
+  const base = document.getElementById('baseUrl').value.trim() || 'https://yourdomain.com/hose-test';
+  const url = base + (base.includes('?') ? '&' : '?') + 'id=' + encodeURIComponent(hose.id);
+  document.getElementById('tagUrl').textContent = url;
+  const qrHolder = document.getElementById('tagQr');
+  qrHolder.innerHTML='';
+  new QRCode(qrHolder, {text:url, width:150, height:150, colorDark:'#1C1F1E', colorLight:'#EDEAE2'});
+  document.getElementById('openTestFromTag').onclick = ()=>{ switchTab('test'); pickHose(hose.id); };
+  document.getElementById('tagCardWrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function renderHoseListRegister(){
+  const el = document.getElementById('hoseListRegister');
+  if(!hoses.length){ el.innerHTML = '<div class="empty">No hoses registered yet.</div>'; return; }
+  el.innerHTML = hoses.slice().reverse().map(h=>`
+    <div class="hose-pick-item">
+      <div><span class="hid">${esc(h.id)}</span><br><span class="hdesc">${esc([h.type,h.desc].filter(Boolean).join(' · ')||'—')}</span></div>
+      <button class="btn ghost small" onclick="renderTag(hoses.find(x=>x.id==='${esc(h.id)}'))">View Tag</button>
+    </div>
+  `).join('');
+}
+
+// ---- Test ----
+document.getElementById('hoseSearch').addEventListener('input', renderHosePicker);
+function renderHosePicker(){
+  const q = (document.getElementById('hoseSearch').value||'').toLowerCase();
+  const el = document.getElementById('hosePicker');
+  const filtered = hoses.filter(h => !q || h.id.toLowerCase().includes(q) || (h.desc||'').toLowerCase().includes(q));
+  if(!filtered.length){ el.innerHTML = '<div class="empty">No matching hoses. Register one first.</div>'; return; }
+  el.innerHTML = filtered.slice().reverse().map(h=>`
+    <div class="hose-pick-item ${h.id===selectedHoseId?'selected':''}" onclick="pickHose('${esc(h.id)}')">
+      <div><span class="hid">${esc(h.id)}</span><br><span class="hdesc">${esc([h.type,h.desc].filter(Boolean).join(' · ')||'—')}</span></div>
+    </div>
+  `).join('');
+}
+function pickHose(id){
+  selectedHoseId = id;
+  renderHosePicker();
+  const card = document.getElementById('testFormCard');
+  card.style.display='block';
+  document.getElementById('testingHoseId').textContent = id;
+  document.getElementById('tDate').value = todayStr();
+  document.getElementById('tNextDue').value = plusMonths(todayStr(),12);
+  document.getElementById('tTester').value='';
+  document.getElementById('tPressure').value='';
+  document.getElementById('tDuration').value='';
+  document.getElementById('tNotes').value='';
+  document.querySelectorAll('input[name=tResult]').forEach(r=>r.checked=false);
+  card.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+document.getElementById('saveTestBtn').addEventListener('click', async ()=>{
+  const errEl = document.getElementById('testError');
+  errEl.style.display='none';
+  const result = document.querySelector('input[name=tResult]:checked');
+  const tester = document.getElementById('tTester').value.trim();
+  if(!selectedHoseId){ errEl.textContent='Select a hose first.'; errEl.style.display='block'; return; }
+  if(!tester){ errEl.textContent='Tester name is required.'; errEl.style.display='block'; return; }
+  if(!result){ errEl.textContent='Select Pass or Fail.'; errEl.style.display='block'; return; }
+  const record = {
+    recordId: 'T-'+Date.now(),
+    hoseId: selectedHoseId,
+    date: document.getElementById('tDate').value,
+    tester,
+    pressure: document.getElementById('tPressure').value.trim(),
+    duration: document.getElementById('tDuration').value.trim(),
+    result: result.value,
+    notes: document.getElementById('tNotes').value.trim(),
+    nextDue: document.getElementById('tNextDue').value,
+    certified: false
+  };
+  tests.push(record);
+  try{
+    await saveTests();
+    toast('Test record saved for '+selectedHoseId+'.');
+    document.getElementById('testFormCard').style.display='none';
+    selectedHoseId=null;
+    renderHosePicker();
+    renderRecords();
+    renderCertList();
+  }catch(e){
+    errEl.textContent='Could not save — please try again.'; errEl.style.display='block';
+  }
+});
+
+// ---- Records ----
+document.getElementById('recFilter').addEventListener('input', renderRecords);
+document.getElementById('recResultFilter').addEventListener('change', renderRecords);
+function renderRecords(){
+  const q = (document.getElementById('recFilter').value||'').toLowerCase();
+  const rf = document.getElementById('recResultFilter').value;
+  const el = document.getElementById('recordsTableWrap');
+  let rows = tests.filter(t => (!q || t.hoseId.toLowerCase().includes(q)) && (!rf || t.result===rf));
+  rows = rows.slice().sort((a,b)=> b.date.localeCompare(a.date));
+  if(!rows.length){ el.innerHTML = '<div class="empty">No test records yet.</div>'; return; }
+  el.innerHTML = `<table><thead><tr>
+      <th>Asset ID</th><th>Date</th><th>Tester</th><th>Result</th><th>Next Due</th><th></th>
+    </tr></thead><tbody>` +
+    rows.map(t=>`
+      <tr>
+        <td style="font-family:'JetBrains Mono',monospace;">${esc(t.hoseId)}</td>
+        <td>${esc(t.date)}</td>
+        <td>${esc(t.tester)}</td>
+        <td><span class="badge ${t.result==='Pass'?'pass':'fail'}">${esc(t.result)}</span>${t.certified?' <span class="badge cert">Certified</span>':''}</td>
+        <td>${esc(t.nextDue||'—')}</td>
+        <td><button class="btn ghost small" onclick="toggleDetail('${t.recordId}')">Details</button></td>
+      </tr>
+      <tr class="row-detail" id="detail-${t.recordId}" style="display:none;"><td colspan="6">
+        <strong>Pressure:</strong> ${esc(t.pressure||'—')} &nbsp;·&nbsp; <strong>Duration:</strong> ${esc(t.duration||'—')}<br>
+        <strong>Notes:</strong> ${esc(t.notes||'—')}
+      </td></tr>
+    `).join('') + `</tbody></table>`;
+}
+function toggleDetail(id){
+  const row = document.getElementById('detail-'+id);
+  row.style.display = row.style.display==='none' ? 'table-row' : 'none';
+}
+
+// ---- Certificates ----
+function renderCertList(){
+  const el = document.getElementById('certList');
+  const passed = tests.filter(t=>t.result==='Pass').slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!passed.length){ el.innerHTML = '<div class="empty">No passed tests available yet.</div>'; updateGenBtn(); return; }
+  el.innerHTML = passed.map(t=>`
+    <div class="checkline">
+      <input type="checkbox" class="certCheck" value="${t.recordId}">
+      <div>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;">${esc(t.hoseId)}</span>
+        — tested ${esc(t.date)} by ${esc(t.tester)}
+        ${t.certified?'<span class="badge cert" style="margin-left:8px;">Already Certified</span>':''}
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('.certCheck').forEach(cb=>cb.addEventListener('change', updateGenBtn));
+  updateGenBtn();
+}
+function updateGenBtn(){
+  const any = document.querySelectorAll('.certCheck:checked').length>0;
+  document.getElementById('genCertBtn').disabled = !any;
+}
+
+document.getElementById('genCertBtn').addEventListener('click', async ()=>{
+  const ids = Array.from(document.querySelectorAll('.certCheck:checked')).map(cb=>cb.value);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'pt', format:'letter'});
+  ids.forEach((id, i)=>{
+    const t = tests.find(x=>x.recordId===id);
+    const hose = hoses.find(h=>h.id===t.hoseId) || {};
+    if(i>0) doc.addPage();
+    drawCertificate(doc, t, hose);
+    t.certified = true;
+  });
+  await saveTests();
+  doc.save('hose-test-certificates.pdf');
+  renderRecords();
+  renderCertList();
+  toast('Generated '+ids.length+' certificate(s).');
+});
+
+function drawCertificate(doc, t, hose){
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  const margin = 46;
+  doc.setDrawColor(28,31,30);
+  doc.setLineWidth(1.4);
+  doc.rect(margin, margin, pw-margin*2, ph-margin*2);
+  doc.setLineWidth(0.6);
+  doc.rect(margin+8, margin+8, pw-margin*2-16, ph-margin*2-16);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(180,60,46);
+  doc.text('HOSE ASSET · TEST & CERTIFICATION LOG', pw/2, margin+42, {align:'center'});
+
+  doc.setFontSize(24);
+  doc.setTextColor(28,31,30);
+  doc.text('Certificate of Test', pw/2, margin+72, {align:'center'});
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(11);
+  doc.setTextColor(80,85,82);
+  doc.text('This certifies that the hose asset described below has been tested', pw/2, margin+94, {align:'center'});
+  doc.text('and the results recorded are as follows.', pw/2, margin+109, {align:'center'});
+
+  let y = margin+150;
+  const lineGap = 24;
+  const rows = [
+    ['Asset ID', hose.id || t.hoseId],
+    ['Type / Diameter', hose.type || '—'],
+    ['Description / Location', hose.desc || '—'],
+    ['Length', hose.length || '—'],
+    ['Test Date', t.date || '—'],
+    ['Tested By', t.tester || '—'],
+    ['Test Pressure', t.pressure || '—'],
+    ['Duration Held', t.duration || '—'],
+    ['Result', t.result || '—'],
+    ['Next Test Due', t.nextDue || '—'],
+  ];
+  doc.setFontSize(11);
+  rows.forEach(([label,val])=>{
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(28,31,30);
+    doc.text(label+':', margin+40, y);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(60,64,62);
+    doc.text(String(val), margin+220, y);
+    y += lineGap;
+  });
+
+  if(t.notes){
+    doc.setFont('helvetica','bold');
+    doc.text('Inspection Notes:', margin+40, y);
+    doc.setFont('helvetica','normal');
+    const split = doc.splitTextToSize(t.notes, pw-margin*2-260);
+    doc.text(split, margin+220, y);
+    y += lineGap*Math.max(1, split.length*0.8);
+  }
+
+  y += 20;
+  doc.setDrawColor(180,60,46);
+  doc.setFillColor(t.result==='Pass' ? 60 : 195, t.result==='Pass' ? 122 : 59, t.result==='Pass' ? 92 : 46);
+  doc.roundedRect(pw/2-55, y, 110, 30, 2, 2, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.text(t.result.toUpperCase(), pw/2, y+20, {align:'center'});
+
+  doc.setFontSize(9);
+  doc.setTextColor(140,140,140);
+  doc.setFont('helvetica','normal');
+  doc.text('Record ID: '+t.recordId+'   ·   Generated '+todayStr(), pw/2, ph-margin-14, {align:'center'});
+}
+
+// ---- Boot: handle ?id= deep link ----
+function handleDeepLink(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if(id){
+    switchTab('test');
+    setTimeout(()=>{
+      if(hoses.some(h=>h.id===id)) pickHose(id);
+      else { document.getElementById('hoseSearch').value=id; renderHosePicker(); }
+    }, 50);
+  }
+}
+
+loadData().then(handleDeepLink);
+</script>
+</body>
+</html>
